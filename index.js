@@ -182,7 +182,7 @@ module.exports.render = function (schema, opts) {
       };
     });
     // rows.unshift("<B>" + v.name + "</B>");
-    var result = v.name + ' ';
+    var result = 'gqltype_' + v.name + ' ';
     result += '[label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">';
     result += '<TR><TD><B>' + v.name + '</B></TD></TR>';
     result += rows.map(function (row) {
@@ -203,11 +203,11 @@ module.exports.render = function (schema, opts) {
         return;
       }
 
-      a.push(v.name + ':' + f.name + 'port -> ' + f.type);
+      a.push('gqltype_' + v.name + ':' + f.name + 'port -> gqltype_' + f.type);
     });
 
     _.each(_.union(v.implements, v.possibleTypes), function(interface){
-      a.push(v.name + ' -> ' + interface.name + ' [style = dotted]');
+      a.push('gqltype_' + v.name + ' -> gqltype_' + interface.name + ' [style = dotted]');
     })
     return a;
   }, [])
