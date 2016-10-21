@@ -19,14 +19,15 @@ function processType(item, entities, types) {
     obj.deprecationReason = field.deprecationReason;
 
     // process field type
+    var effectiveType = field.type;
     if (field.type.ofType) {
-      obj.type = field.type.ofType.name;
-      obj.isObjectType = field.type.ofType.kind === 'OBJECT';
+      effectiveType = field.type.ofType;
       obj.isList = field.type.kind === 'LIST';
-    } else {
-      obj.type = field.type.name;
-      obj.isObjectType = field.type.kind === 'OBJECT';
     }
+    obj.type = effectiveType.name;
+    obj.isObjectType = effectiveType.kind === 'OBJECT';
+    obj.isInterfaceType = effectiveType.kind === 'INTERFACE';
+    obj.isUnionType = effectiveType.kind === 'UNION';
 
     // process args
     if (field.args && field.args.length) {
@@ -48,12 +49,24 @@ function processType(item, entities, types) {
 
   entities[type.name] = {
     name: type.name,
-    fields: fields
+    fields: fields,
+    implements: [],
+    possibleTypes: []
   };
 
+  if (type.interfaces) {
+    entities[type.name].implements = _.each(type.interfaces || [], function(i) { return i.name });
+  }
+
+  if (type.kind == 'UNION') {
+    entities[type.name].possibleTypes= _.each(type.possibleTypes || [], function(t) { return t.name });
+  }
+
   var linkeditems = _.chain(fields)
-    .filter('isObjectType')
+    .filter(function(item) { return item.isObjectType || item.isInterfaceType || item.isUnionType })
     .map('type')
+    .union(_.map(type.interfaces, 'name'))
+    .union(_.map(type.possibleTypes, 'name'))
     .uniq()
     .value();
 
@@ -186,13 +199,16 @@ module.exports.render = function (schema, opts) {
   dotfile += _.chain(entities)
   .reduce(function (a, v) {
     _.each(v.fields, function (f) {
-      if (!f.isObjectType) {
+      if (!(f.isObjectType || f.isInterfaceType || f.isUnionType)) {
         return;
       }
 
       a.push(v.name + ':' + f.name + 'port -> ' + f.type);
     });
 
+    _.each(_.union(v.implements, v.possibleTypes), function(interface){
+      a.push(v.name + ' -> ' + interface.name + ' [style = dotted]');
+    })
     return a;
   }, [])
   .uniq()
