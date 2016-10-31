@@ -182,8 +182,12 @@ module.exports.render = function (schema, opts) {
       };
     });
     // rows.unshift("<B>" + v.name + "</B>");
-    var result = 'gqltype_' + v.name + ' ';
-    result += '[label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">';
+    var isRelayGlue = (v.name.endsWith('Connection') || v.name.endsWith('Edge'));
+    var result = 'gqltype_' + v.name + ' [';
+    if (isRelayGlue) {
+      result += 'fontsize=11 color=gray33 fontcolor=gray33 ';
+    }
+    result += 'label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">';
     result += '<TR><TD><B>' + v.name + '</B></TD></TR>';
     result += rows.map(function (row) {
       return '<TR><TD PORT="' + row.name + '">' + row.text + '</TD></TR>';
