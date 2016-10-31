@@ -150,7 +150,7 @@ module.exports.render = function (schema, opts) {
   // build the dot
   var dotfile = 'digraph erd {\n' +
     'graph [\n' +
-    '  rankdir = "LR"\n' +
+    '  rankdir = "TB"\n' +
     '];\n' +
     'node [\n' +
     '  fontsize = "16"\n' +
